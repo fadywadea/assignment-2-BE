@@ -19,9 +19,8 @@ const posts = [
 
 // Function to handle requests and responses
 const server = myHttp.createServer((req, res) => {
-  // End point server running...
   if (req.url == "/" && req.method == "GET") {
-    res.end(console.log("server running..."));
+    res.end(JSON.stringify(users));
   }
   // End point show All users
   else if (req.url == "/users" && req.method == "GET") {
@@ -35,16 +34,25 @@ const server = myHttp.createServer((req, res) => {
     });
   }
   // End point Sort users
-  else if (req.url == "/sorted-user-by-alphabetically" && req.method == "GET") {
+  else if (req.url == "/sortUsers" && req.method == "GET") {
     res.end(JSON.stringify(users.sort((a, b) => a.name.localeCompare(b.name))));
   }
   // End point Delete user
-  else if (req.url == "/users" && req.method == "DELETE") {
-    users.splice(0, 1);
-    res.end("User has been deleted");
+  else if (req.url == "/deleteUser" && req.method == "DELETE") {
+    req.on("data", (chunk) => {
+      const deleteId = JSON.parse(chunk);
+      let indexUser = users.find((user) => user.id == deleteId.id);
+      if (indexUser) {
+        let deleteUser = users.findIndex((user) => user.id == deleteId.id);
+        users.splice(deleteUser, 1);
+        res.end("User has been deleted");
+      } else {
+        res.end("not found");
+      }
+    });
   }
   // End point Update user
-  else if (req.url == "/user" && req.method == "PATCH") {
+  else if (req.url == "/updateUser" && req.method == "PATCH") {
     let body = "";
     req.on("data", (chunk) => {
       body += chunk;
@@ -61,11 +69,10 @@ const server = myHttp.createServer((req, res) => {
     });
   }
   // End point Search user by id
-  else if (req.url == "/user" && req.method == "GET") {
+  else if (req.url == "/userId" && req.method == "GET") {
     let userId = "";
     req.on("data", (chunk) => {
       userId += chunk;
-      // console.log(userId);
     });
     req.on("end", () => {
       const dataUser = JSON.parse(userId);
@@ -86,12 +93,21 @@ const server = myHttp.createServer((req, res) => {
     });
   }
   // End point Delete post
-  else if (req.url == "/posts" && req.method == "DELETE") {
-    posts.splice(0, 1);
-    res.end("deleted successfully");
+  else if (req.url == "/deletePost" && req.method == "DELETE") {
+    req.on("data", (chunk) => {
+      const deleteId = JSON.parse(chunk);
+      let indexPost = posts.find((post) => post.id == deleteId.id);
+      if (indexPost) {
+        let deletePost = posts.findIndex((post) => post.id == deleteId.id);
+        posts.splice(deletePost, 1);
+        res.end("deleted successfully");
+      } else {
+        res.end("not found");
+      }
+    });
   }
   // End point Update post
-  else if (req.url == "/post" && req.method == "PATCH") {
+  else if (req.url == "/updatePost" && req.method == "PATCH") {
     let dataPost = "";
     req.on("data", (chunk) => {
       dataPost += chunk;
@@ -108,7 +124,7 @@ const server = myHttp.createServer((req, res) => {
     });
   }
   // End point search  post by id
-  else if (req.url == "/post" && req.method == "GET") {
+  else if (req.url == "/postId" && req.method == "GET") {
     let postID = "";
     req.on("data", (chunk) => {
       postID += chunk;
